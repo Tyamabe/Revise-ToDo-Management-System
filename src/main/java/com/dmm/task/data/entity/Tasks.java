@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "tasks") //database01内のtasksテーブル(課題で作成したやつ)指定。ここに辿り着くのに非常に時間かかった、、、
-public class Regist {
+public class Tasks {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;

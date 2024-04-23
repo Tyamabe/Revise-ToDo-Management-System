@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import com.dmm.task.data.entity.Regist;
+import com.dmm.task.data.entity.Tasks;
 import com.dmm.task.data.repository.RegistRepository;
 import com.dmm.task.form.RegistForm;
 import com.dmm.task.service.AccountUserDetails;
@@ -22,9 +22,16 @@ import com.dmm.task.service.AccountUserDetails;
 @Controller
 public class RegistController {
 
+//	private RegistRepository repo; //repoをCalendarControllerから取得できるように。掲示板課題との違いは、表示を別のクラスにすること
+//	public RegistController(RegistRepository repo) {
+//		this.repo = repo;
+//	}
+//	public RegistRepository getRepo() {
+//		return repo; 
+//	}
 	@Autowired
 	private RegistRepository repo;
-
+	
 	/**
 	 * 投稿の一覧表示.
 	 * 
@@ -34,9 +41,9 @@ public class RegistController {
 	@GetMapping("/create")
 	public String regist(Model model) {
 		// 逆順で投稿をすべて取得する
-		List<Regist> list = repo.findAll(Sort.by(Sort.Direction.DESC, "id"));
+		List<Tasks> list = repo.findAll(Sort.by(Sort.Direction.DESC, "id"));
 //    Collections.reverse(list); //普通に取得してこちらの処理でもOK
-		model.addAttribute("posts", list);
+		model.addAttribute("main", list);
 		RegistForm registForm = new RegistForm();
 		model.addAttribute("registForm", registForm);
 		return "/create";
@@ -61,13 +68,13 @@ public class RegistController {
 		//	return "redirect:/main";
 		//}
 
-		Regist regist = new Regist();
-		regist.setName(user.getName());
-		regist.setTitle(registForm.getTitle());
-		regist.setText(registForm.getText());
-		regist.setDate(LocalDateTime.now());
+		Tasks tasks = new Tasks();
+		tasks.setName(user.getName());
+		tasks.setTitle(registForm.getTitle());
+		tasks.setText(registForm.getText());
+		tasks.setDate(LocalDateTime.now());
 
-		repo.save(regist);
+		repo.save(tasks);
 
 		return "redirect:/main";
 	}
