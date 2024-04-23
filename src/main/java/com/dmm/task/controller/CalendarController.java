@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,15 +42,14 @@ public class CalendarController {
         List<Tasks> allTasks = registRepository.findAll();
         Map<LocalDate, List<Tasks>> tasksMap = new HashMap<>();
         for (Tasks task : allTasks) {
-            LocalDate taskDate = task.getDate().toLocalDate(); // Regist に日付が LocalDateTime 型と仮定
+            LocalDate taskDate = task.getDate().toLocalDate(); // LocalDateTimeからLocalDateへ
             tasksMap.computeIfAbsent(taskDate, k -> new ArrayList<>()).add(task);
         }
 
         model.addAttribute("matrix", monthList);
         model.addAttribute("prev", today.minusMonths(1));
         model.addAttribute("next", today.plusMonths(1));
-        Map<LocalDate, List<Task>> tasks = new HashMap<>();
-        model.addAttribute("tasks", tasks);
+        model.addAttribute("tasks", tasksMap);
         return "main";
     }
 }
