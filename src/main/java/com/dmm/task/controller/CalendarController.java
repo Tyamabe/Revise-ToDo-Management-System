@@ -26,7 +26,7 @@ public class CalendarController {
     @GetMapping("/main")
     public String showCalendar(@RequestParam Optional<String> date, Model model) {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); //yyyy-mm-ddのパターンを指定
-        LocalDate today = date.map(d -> LocalDate.parse(d, dateFormatter)).orElse(LocalDate.now()); //Optional→nullかもしれない時。値をLocalDateオブジェクトへ
+        LocalDate today = date.map(d -> LocalDate.parse(d, dateFormatter)).orElse(LocalDate.now()); //Optional→nullかもしれない時。値をLocalDateオブジェクトへ.
         
     	List<List<LocalDate>> monthList = new ArrayList<>();
         LocalDate firstDayOfMonth = today.withDayOfMonth(1);
