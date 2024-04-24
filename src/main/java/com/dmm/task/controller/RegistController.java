@@ -3,6 +3,8 @@ package com.dmm.task.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -78,6 +80,39 @@ public class RegistController {
 
 		return "redirect:/main";
 	}
+	
+	//投稿を編集する
+	@PostMapping("/main/edit/{id}")
+	public String updateTask(@PathVariable("id") Integer id, @Valid RegistForm form, BindingResult bindingResult, Model model) {
+	    if (bindingResult.hasErrors()) {
+	        // フォームにエラーがある場合、再度編集フォームを表示
+	        model.addAttribute("task", form);
+	        return "edit";
+	    }
+	    // データベースからタスクを検索
+	    Tasks task = repo.findById(id).orElse(null);
+	    if (task != null) {
+	        task.setTitle(form.getTitle());//タイトルの更新
+	        task.setText(form.getText());//内容の更新
+	        task.setDone(form.isDone()); // 完了フラグ更新
+	        
+	        //タスクが完了されている場合、タイトルの先頭にチェックマークを追加
+	      //  if (form.isDone()) {
+	        //    task.setTitle("✅ " + task.getTitle());
+	        //}
+	        
+	        
+	        repo.save(task);//
+	    } else {
+	        // タスクが見つからない場合はエラーメッセージを表示
+	        model.addAttribute("errorMessage", "タスクが見つかりませんでした。");
+	        return "redirect:/main";
+	    }
+	    // 更新後はカレンダーページにリダイレクト
+	    return "redirect:/main";
+	}
+
+	
 
 	/**
 	 * 投稿を削除する
@@ -85,9 +120,21 @@ public class RegistController {
 	 * @param id 投稿ID
 	 * @return 遷移先
 	 */
-	@PostMapping("/edit")
-	public String delete(@PathVariable Integer id) {
+	@PostMapping("/main/delete/{id}")//editから、遷移後のuRLであるこちらへ変更→/main/delete/{id}
+	public String delete(@PathVariable("id") Integer id) {
 		repo.deleteById(id);
-		return "main";
+		return "redirect:/main";
+	}
+	
+	//タスクがクリックされたらeditに遷移するようにするための設定
+	@GetMapping("/main/edit/{id}")
+	public String editTaskForm(@PathVariable("id") Integer id, Model model) {
+	    // タスクをIDで検索
+	    Tasks task = repo.findById(id).orElse(null);
+	    if (task == null) {
+	        return "redirect:/main"; // タスクが見つからない場合はメインページにリダイレクト
+	    }
+	    model.addAttribute("task", task);
+	    return "edit"; // edit.htmlを表示
 	}
 }

@@ -2,6 +2,7 @@ package com.dmm.task.controller;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,9 +10,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.dmm.task.data.entity.Tasks;
@@ -43,10 +48,21 @@ public class CalendarController {
             monthList.add(weekRow);
         }
         
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();//Authenticationオブジェクト(今ログインしているアカウントのロールなどの情報)取得
+        List<Tasks> tasks = new ArrayList<>();//タスクのリスト初期化して
+        if (authentication != null && authentication.isAuthenticated()) {//Authenticationオブジェクトがnullじゃない(=セキュリティコンテキストの設定が正しい)&&ちゃんとログイン(=認証)されたユーザー
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();//認証プロセス中に設定されたプリンシパル(=ログインユーザー)の取得。
+            String username = userDetails.getUsername();  // UserDetailsオブジェクトから、ログイン時に使用されるユーザー名を取得
+            if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {//ユーザーに割り当てられた全てのロールを取得。ROLE_ADMINに合致する要素が一つでもないかチェック
+                tasks = registRepository.findAll();//ADMINの場合全てのタスクをデータベースから取得
+            } else {
+                tasks = registRepository.findByName(username);  // ユーザー名に基づいてタスクをフィルタリング
+            }
+        }
+        
         // タスクの取得とマッピング
-        List<Tasks> allTasks = registRepository.findAll();
         Map<LocalDate, List<Tasks>> tasksMap = new HashMap<>();
-        for (Tasks task : allTasks) {
+        for (Tasks task : tasks) {
             LocalDate taskDate = task.getDate().toLocalDate(); // LocalDateTimeからLocalDateへ
             tasksMap.computeIfAbsent(taskDate, k -> new ArrayList<>()).add(task);
         }
@@ -61,4 +77,16 @@ public class CalendarController {
         model.addAttribute("month", formattedDate);
         return "main";
     }
+    @GetMapping("/main/create/{date}")//日付をクリックしたタスクregist画面に遷移するように
+    public String createTaskForm(@PathVariable("date") String dateString, Model model) {
+        LocalDate date;
+        try {
+            date = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } catch (DateTimeParseException e) {
+            return "redirect:/main"; // 日付の形式が正しくない場合、カレンダーメインページにリダイレクト
+        }
+        model.addAttribute("date", date);  // Date型として日付を追加
+        return "create";
+    }
+
 }

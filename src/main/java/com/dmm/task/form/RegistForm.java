@@ -12,4 +12,6 @@ public class RegistForm {
 	// textへのバリデーション設定を追加
 	@Size(min = 1, max = 200)
 	private String text;
+	
+    private boolean done; // タスクの完了状態を追加
 }
