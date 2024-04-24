@@ -54,9 +54,11 @@ public class CalendarController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();//認証プロセス中に設定されたプリンシパル(=ログインユーザー)の取得。
             String username = userDetails.getUsername();  // UserDetailsオブジェクトから、ログイン時に使用されるユーザー名を取得
             if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {//ユーザーに割り当てられた全てのロールを取得。ROLE_ADMINに合致する要素が一つでもないかチェック
-                tasks = registRepository.findAll();//ADMINの場合全てのタスクをデータベースから取得
+            	System.out.println("###admin###");
+            	tasks = registRepository.findAll();//ADMINの場合全てのタスクをデータベースから取得
             } else {
-                tasks = registRepository.findByName(username);  // ユーザー名に基づいてタスクをフィルタリング
+            	System.out.println("###user###");//①正しい方を通っているかわかる
+                tasks = registRepository.findByName(username);  // ユーザー名に基づいてタスクをフィルタリング②通っていルナらば処理が間違えている
             }
         }
         
