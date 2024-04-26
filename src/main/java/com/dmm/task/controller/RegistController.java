@@ -71,7 +71,7 @@ public class RegistController {
 		//}
 
 		Tasks tasks = new Tasks();
-		tasks.setName(user.getName());
+		tasks.setName(user.getUsername());//ここがgetNameだったことが問題だったっぽい
 		tasks.setTitle(registForm.getTitle());
 		tasks.setText(registForm.getText());
 		tasks.setDate(LocalDateTime.now());
