@@ -1,6 +1,6 @@
 package com.dmm.task.controller;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -47,6 +47,7 @@ public class RegistController {
 //    Collections.reverse(list); //普通に取得してこちらの処理でもOK
 		model.addAttribute("main", list);
 		RegistForm registForm = new RegistForm();
+	    registForm.setDate(LocalDate.now()); //★試し。初期値として今の日付を入れる
 		model.addAttribute("registForm", registForm);
 		return "/create";
 	}
@@ -61,6 +62,13 @@ public class RegistController {
 	@PostMapping("/main/create")
 	public String create(@Validated RegistForm registForm, BindingResult bindingResult,
 			@AuthenticationPrincipal AccountUserDetails user, Model model) {
+	    System.out.println("#####Received date: " + registForm.getDate()); //どの日付がサーバに渡されてる
+	 
+	    if (registForm.getDate() == null) {  //日付がnullだったらエラー出す
+	        model.addAttribute("errorMessage", "日付が入力されていません。");
+	        return "create";
+	    }
+	    
 		// バリデーションの結果、エラーがあるかどうかチェック
 		//if (bindingResult.hasErrors()) {
 			// エラーがある場合は投稿登録画面を返す
@@ -69,12 +77,24 @@ public class RegistController {
 		//	model.addAttribute("registForm", registForm);
 		//	return "redirect:/main";
 		//}
+	//    if (bindingResult.hasErrors()) {
+	//    	// バリデーションエラーがある場合、エラー情報を持ってフォームを再表示
+	//    	model.addAttribute("tasks", repo.findAll(Sort.by(Sort.Direction.DESC, "id")));
+	//    	model.addAttribute("registForm", registForm);
+	//    	System.out.println("###日付nullチェック###");
+	//    	return "create";
+	//    	}
+		
+	    if (registForm.getDate() == null) {
+	        model.addAttribute("errorMessage", "日付が入力されていません。");
+	        return "create"; // 日付が null の場合はエラーメッセージを表示してフォーム画面に戻る
+	    }
 
 		Tasks tasks = new Tasks();
 		tasks.setName(user.getUsername());//ここがgetNameだったことが問題だったっぽい
 		tasks.setTitle(registForm.getTitle());
 		tasks.setText(registForm.getText());
-		tasks.setDate(LocalDateTime.now());
+		tasks.setDate(registForm.getDate().atStartOfDay());
 
 		repo.save(tasks);
 
