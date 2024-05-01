@@ -115,6 +115,7 @@ public class RegistController {
 	        task.setTitle(form.getTitle());//タイトルの更新
 	        task.setText(form.getText());//内容の更新
 	        task.setDone(form.isDone()); // 完了フラグ更新
+	        task.setDate(form.getDate().atStartOfDay()); // 日付の更新※これが漏れてた
 	        
 	        //タスクが完了されている場合、タイトルの先頭にチェックマークを追加
 	      //  if (form.isDone()) {
